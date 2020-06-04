@@ -16,7 +16,8 @@ Point = namedtuple('Point', ['x', 'y'])
 
 
 class Rectangle:
-    # Can use floats while pygame.Rect must have integer dimensions.
+    # I'm not using pygame rects because they can only work with integers
+    # but I need floats.
     def __init__(self, left, top, right, bottom):
         self.left = left
         self.top = top
@@ -51,7 +52,7 @@ class PointQuadtree:
         self.boundary = Rectangle(left, top, right, bottom)
         self.capacity = capacity  # How many elements before it subdivides.
         self.points = []
-        self.depth = depth - 1  # Recursion limit. Don't subdivide if depth == 0
+        self.depth = depth - 1  # Limit recursion, don't subdivide if depth == 0
 
         self.is_divided = False
         self.north_west = None
@@ -61,7 +62,6 @@ class PointQuadtree:
 
     def insert(self, point):
         if not self.boundary.collide_point(point):
-            # Point does not belong here.
             return False
 
         if self.depth == 0:
@@ -77,7 +77,8 @@ class PointQuadtree:
         # FIXME: It would be enough to check if the point is left or right
         #  and above ot below the center. If it is outside this rect then it
         #  wouldn't be here. Just need to handle the root rect differently
-        #  because that one has outside borders?
+        #  because that one has outside borders? Also means getting rid of
+        #  the collide_point method.
         #  Check if this makes it faster!
         if self.north_west.insert(point) or \
                 self.north_east.insert(point) or \
@@ -89,7 +90,6 @@ class PointQuadtree:
         raise Exception(f"{point} can not be inserted into {self.boundary}")
 
     def subdivide(self):
-        # remember to add the points to the children afterwards using insert into self
         self.north_west = PointQuadtree(
             self.boundary.left, self.boundary.top,
             self.boundary.center_x, self.boundary.center_y,
